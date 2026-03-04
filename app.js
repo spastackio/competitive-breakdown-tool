@@ -118,7 +118,13 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-      .then(function (res) { return res.json(); })
+      .then(function (res) {
+        var contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          throw new Error('Server error — please try again');
+        }
+        return res.json();
+      })
       .then(function (data) {
         if (!data.success) {
           showError(data.error || 'Unknown error');

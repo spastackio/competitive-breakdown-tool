@@ -4,16 +4,12 @@ const { URL } = require('url');
 
 // --- Helpers ---
 
-function jsonResponse(statusCode, body) {
-  return new Response(JSON.stringify(body), {
-    status: statusCode,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+function sendJson(res, statusCode, body) {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(statusCode).json(body);
 }
 
 function httpRequest(url, options = {}) {
@@ -24,7 +20,7 @@ function httpRequest(url, options = {}) {
       path: parsedUrl.pathname + parsedUrl.search,
       method: options.method || 'GET',
       headers: options.headers || {},
-      timeout: options.timeout || 10000,
+      timeout: options.timeout || 30000,
     };
 
     const req = https.request(reqOptions, (res) => {
@@ -74,7 +70,7 @@ function fetchHTML(url, redirectsLeft) {
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml',
       },
-      timeout: 8000,
+      timeout: 30000,
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         let redirectUrl;
@@ -268,7 +264,7 @@ async function searchGooglePlaces(businessName, city, state) {
         'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.reviews,places.photos,places.currentOpeningHours,places.nationalPhoneNumber,places.websiteUri,places.businessStatus,places.editorialSummary',
       },
       body: JSON.stringify({ textQuery: query }),
-      timeout: 8000,
+      timeout: 30000,
     });
 
     if (res.data && res.data.places && res.data.places.length > 0) {
@@ -298,7 +294,7 @@ async function discoverCompetitors(businessType, city, state, prospectName) {
         'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.photos,places.currentOpeningHours',
       },
       body: JSON.stringify({ textQuery: query, maxResultCount: 8 }),
-      timeout: 8000,
+      timeout: 30000,
     });
 
     if (!res.data || !res.data.places) return [];
@@ -375,7 +371,7 @@ async function checkKeywordRankings(businessName, businessType, city, state) {
         'X-Goog-FieldMask': 'places.displayName,places.formattedAddress',
       },
       body: JSON.stringify({ textQuery: kw.query, maxResultCount: 20 }),
-      timeout: 8000,
+      timeout: 30000,
     }).then(function(res) {
       if (!res.data || !res.data.places) return { label: kw.label, query: kw.query, position: null, totalResults: 0 };
 
@@ -415,103 +411,103 @@ function calculateWebsiteScore(websiteUrl, htmlAnalysis) {
     return { score: 0, findings: findings };
   }
 
-  // HTTPS (0-2)
+  // HTTPS (0-7)
   var isHttps = websiteUrl.startsWith('https://');
-  var sslPoints = isHttps ? 2 : 0;
+  var sslPoints = isHttps ? 7 : 0;
   score += sslPoints;
-  findings.push({ label: 'HTTPS/SSL', value: isHttps ? 'Secure' : 'Not Secure', points: sslPoints, maxPoints: 2 });
+  findings.push({ label: 'HTTPS/SSL', value: isHttps ? 'Secure' : 'Not Secure', points: sslPoints, maxPoints: 7 });
 
-  // Load Speed (0-3)
+  // Load Speed (0-10)
   var speedPoints = 0;
   var speedLabel = 'Unknown';
   if (htmlAnalysis.loadTimeMs !== null) {
     var sec = htmlAnalysis.loadTimeMs / 1000;
-    if (sec < 1.5) { speedPoints = 3; speedLabel = sec.toFixed(1) + 's (Fast)'; }
-    else if (sec < 3) { speedPoints = 2; speedLabel = sec.toFixed(1) + 's (Good)'; }
-    else if (sec < 5) { speedPoints = 1; speedLabel = sec.toFixed(1) + 's (Slow)'; }
+    if (sec < 1.5) { speedPoints = 10; speedLabel = sec.toFixed(1) + 's (Fast)'; }
+    else if (sec < 3) { speedPoints = 7; speedLabel = sec.toFixed(1) + 's (Good)'; }
+    else if (sec < 5) { speedPoints = 3; speedLabel = sec.toFixed(1) + 's (Slow)'; }
     else { speedPoints = 0; speedLabel = sec.toFixed(1) + 's (Very Slow)'; }
   }
   score += speedPoints;
-  findings.push({ label: 'Load Speed', value: speedLabel, points: speedPoints, maxPoints: 3 });
+  findings.push({ label: 'Load Speed', value: speedLabel, points: speedPoints, maxPoints: 10 });
 
-  // SEO Fundamentals (0-4)
+  // SEO Fundamentals (0-13)
   var seoPoints = 0;
   var seoDetails = [];
-  if (htmlAnalysis.hasTitleTag) { seoPoints++; seoDetails.push('title'); }
-  if (htmlAnalysis.hasMetaDescription) { seoPoints++; seoDetails.push('meta desc'); }
-  if (htmlAnalysis.hasCanonical) { seoPoints++; seoDetails.push('canonical'); }
-  if (htmlAnalysis.properHeadings) { seoPoints++; seoDetails.push('headings'); }
-  var seoLabel = seoPoints >= 3 ? 'Good' : seoPoints >= 2 ? 'Partial' : 'Poor';
+  if (htmlAnalysis.hasTitleTag) { seoPoints += 4; seoDetails.push('title'); }
+  if (htmlAnalysis.hasMetaDescription) { seoPoints += 3; seoDetails.push('meta desc'); }
+  if (htmlAnalysis.hasCanonical) { seoPoints += 3; seoDetails.push('canonical'); }
+  if (htmlAnalysis.properHeadings) { seoPoints += 3; seoDetails.push('headings'); }
+  var seoLabel = seoPoints >= 10 ? 'Good' : seoPoints >= 7 ? 'Partial' : 'Poor';
   if (seoDetails.length > 0) seoLabel += ' (' + seoDetails.join(', ') + ')';
   score += seoPoints;
-  findings.push({ label: 'SEO Fundamentals', value: seoLabel, points: seoPoints, maxPoints: 4 });
+  findings.push({ label: 'SEO Fundamentals', value: seoLabel, points: seoPoints, maxPoints: 13 });
 
-  // Mobile Ready (0-2)
+  // Mobile Ready (0-7)
   var mobilePoints = 0;
-  if (htmlAnalysis.hasViewport) mobilePoints++;
-  if (htmlAnalysis.hasClickablePhone) mobilePoints++;
-  var mobileLabel = mobilePoints === 2 ? 'Yes' : mobilePoints === 1 ? 'Partial' : 'No';
+  if (htmlAnalysis.hasViewport) mobilePoints += 4;
+  if (htmlAnalysis.hasClickablePhone) mobilePoints += 3;
+  var mobileLabel = mobilePoints >= 7 ? 'Yes' : mobilePoints >= 3 ? 'Partial' : 'No';
   score += mobilePoints;
-  findings.push({ label: 'Mobile Ready', value: mobileLabel, points: mobilePoints, maxPoints: 2 });
+  findings.push({ label: 'Mobile Ready', value: mobileLabel, points: mobilePoints, maxPoints: 7 });
 
-  // Accessibility (0-2)
+  // Accessibility (0-7)
   var a11yPoints = 0;
-  if (htmlAnalysis.altCoverage >= 0.5) a11yPoints++;
-  if (htmlAnalysis.hasLangAttr && (htmlAnalysis.hasAriaLabels || htmlAnalysis.hasRoleAttrs)) a11yPoints++;
-  var a11yLabel = a11yPoints === 2 ? 'Good' : a11yPoints === 1 ? 'Partial' : 'Poor';
+  if (htmlAnalysis.altCoverage >= 0.5) a11yPoints += 4;
+  if (htmlAnalysis.hasLangAttr && (htmlAnalysis.hasAriaLabels || htmlAnalysis.hasRoleAttrs)) a11yPoints += 3;
+  var a11yLabel = a11yPoints >= 7 ? 'Good' : a11yPoints >= 3 ? 'Partial' : 'Poor';
   score += a11yPoints;
-  findings.push({ label: 'Accessibility', value: a11yLabel, points: a11yPoints, maxPoints: 2 });
+  findings.push({ label: 'Accessibility', value: a11yLabel, points: a11yPoints, maxPoints: 7 });
 
-  // CTA Effectiveness (0-4)
+  // CTA Effectiveness (0-13)
   var ctaPoints = 0;
   var ctaLabel = 'Missing';
-  if (htmlAnalysis.ctaStrength === 'strong') { ctaPoints = 4; ctaLabel = 'Strong & Prominent'; }
-  else if (htmlAnalysis.ctaStrength === 'good') { ctaPoints = 3; ctaLabel = 'Good'; }
-  else if (htmlAnalysis.ctaStrength === 'present') { ctaPoints = 2; ctaLabel = 'Needs Work'; }
-  else if (htmlAnalysis.ctaStrength === 'weak') { ctaPoints = 1; ctaLabel = 'Weak'; }
+  if (htmlAnalysis.ctaStrength === 'strong') { ctaPoints = 13; ctaLabel = 'Strong & Prominent'; }
+  else if (htmlAnalysis.ctaStrength === 'good') { ctaPoints = 10; ctaLabel = 'Good'; }
+  else if (htmlAnalysis.ctaStrength === 'present') { ctaPoints = 7; ctaLabel = 'Needs Work'; }
+  else if (htmlAnalysis.ctaStrength === 'weak') { ctaPoints = 3; ctaLabel = 'Weak'; }
   score += ctaPoints;
-  findings.push({ label: 'Call-to-Action', value: ctaLabel, points: ctaPoints, maxPoints: 4 });
+  findings.push({ label: 'Call-to-Action', value: ctaLabel, points: ctaPoints, maxPoints: 13 });
 
-  // Modern Design (0-4)
+  // Modern Design (0-13)
   var ms = htmlAnalysis.modernSignals;
   var designPoints = 0;
   var designLabel = 'Outdated';
-  if (ms >= 8) { designPoints = 4; designLabel = 'Modern (' + ms + '/10)'; }
-  else if (ms >= 6) { designPoints = 3; designLabel = 'Mostly Modern (' + ms + '/10)'; }
-  else if (ms >= 4) { designPoints = 2; designLabel = 'Dated (' + ms + '/10)'; }
-  else if (ms >= 2) { designPoints = 1; designLabel = 'Basic (' + ms + '/10)'; }
+  if (ms >= 8) { designPoints = 13; designLabel = 'Modern (' + ms + '/10)'; }
+  else if (ms >= 6) { designPoints = 10; designLabel = 'Mostly Modern (' + ms + '/10)'; }
+  else if (ms >= 4) { designPoints = 7; designLabel = 'Dated (' + ms + '/10)'; }
+  else if (ms >= 2) { designPoints = 3; designLabel = 'Basic (' + ms + '/10)'; }
   score += designPoints;
-  findings.push({ label: 'Modern Design', value: designLabel, points: designPoints, maxPoints: 4 });
+  findings.push({ label: 'Modern Design', value: designLabel, points: designPoints, maxPoints: 13 });
 
-  // Booking / Contact Form (0-2)
-  var bookingPoints = htmlAnalysis.hasBooking ? 2 : 0;
+  // Booking / Contact Form (0-7)
+  var bookingPoints = htmlAnalysis.hasBooking ? 7 : 0;
   score += bookingPoints;
-  findings.push({ label: 'Booking/Contact Form', value: htmlAnalysis.hasBooking ? 'Found' : 'Missing', points: bookingPoints, maxPoints: 2 });
+  findings.push({ label: 'Booking/Contact Form', value: htmlAnalysis.hasBooking ? 'Found' : 'Missing', points: bookingPoints, maxPoints: 7 });
 
-  // Page Structure (0-3)
+  // Page Structure (0-10)
   var structurePoints = 0;
-  if (htmlAnalysis.semanticCount >= 3) structurePoints++;
-  if (htmlAnalysis.properHeadings) structurePoints++;
-  if (htmlAnalysis.altCoverage >= 0.5) structurePoints++;
-  var structureLabel = structurePoints === 3 ? 'Well Structured' : structurePoints >= 1 ? 'Partial' : 'Poor';
+  if (htmlAnalysis.semanticCount >= 3) structurePoints += 4;
+  if (htmlAnalysis.properHeadings) structurePoints += 3;
+  if (htmlAnalysis.altCoverage >= 0.5) structurePoints += 3;
+  var structureLabel = structurePoints >= 10 ? 'Well Structured' : structurePoints >= 3 ? 'Partial' : 'Poor';
   score += structurePoints;
-  findings.push({ label: 'Page Structure', value: structureLabel, points: structurePoints, maxPoints: 3 });
+  findings.push({ label: 'Page Structure', value: structureLabel, points: structurePoints, maxPoints: 10 });
 
-  // Trust & Social Proof (0-3)
+  // Trust & Social Proof (0-10)
   var trustPoints = 0;
-  if (htmlAnalysis.hasTestimonials) trustPoints++;
-  if (htmlAnalysis.socialLinks > 0) trustPoints++;
-  if (htmlAnalysis.hasTrustSignals) trustPoints++;
-  var trustLabel = trustPoints >= 2 ? 'Strong' : trustPoints === 1 ? 'Some' : 'Missing';
+  if (htmlAnalysis.hasTestimonials) trustPoints += 4;
+  if (htmlAnalysis.socialLinks > 0) trustPoints += 3;
+  if (htmlAnalysis.hasTrustSignals) trustPoints += 3;
+  var trustLabel = trustPoints >= 7 ? 'Strong' : trustPoints >= 3 ? 'Some' : 'Missing';
   score += trustPoints;
-  findings.push({ label: 'Trust & Social Proof', value: trustLabel, points: trustPoints, maxPoints: 3 });
+  findings.push({ label: 'Trust & Social Proof', value: trustLabel, points: trustPoints, maxPoints: 10 });
 
-  // Schema Markup (0-1)
-  var schemaPoints = htmlAnalysis.hasSchema ? 1 : 0;
+  // Schema Markup (0-3)
+  var schemaPoints = htmlAnalysis.hasSchema ? 3 : 0;
   score += schemaPoints;
-  findings.push({ label: 'Schema Markup', value: htmlAnalysis.hasSchema ? 'Found' : 'Missing', points: schemaPoints, maxPoints: 1 });
+  findings.push({ label: 'Schema Markup', value: htmlAnalysis.hasSchema ? 'Found' : 'Missing', points: schemaPoints, maxPoints: 3 });
 
-  // Total: 2+3+4+2+2+4+4+2+3+3+1 = 30
+  // Total: 7+10+13+7+7+13+13+7+10+10+3 = 100
   return { score: score, findings: findings };
 }
 
@@ -522,86 +518,85 @@ function calculateReviewScore(place) {
   var reviewCount = place ? (place.userRatingCount || 0) : 0;
   var rating = place ? (place.rating || 0) : 0;
 
-  // Review count (0-18)
+  // Review count (0-60)
   var countPoints = 0;
   if (reviewCount === 0) countPoints = 0;
-  else if (reviewCount <= 5) countPoints = 2;
-  else if (reviewCount <= 10) countPoints = 4;
-  else if (reviewCount <= 25) countPoints = 7;
-  else if (reviewCount <= 50) countPoints = 10;
-  else if (reviewCount <= 100) countPoints = 13;
-  else if (reviewCount <= 150) countPoints = 15;
-  else if (reviewCount <= 200) countPoints = 17;
-  else countPoints = 18;
+  else if (reviewCount <= 5) countPoints = 7;
+  else if (reviewCount <= 10) countPoints = 13;
+  else if (reviewCount <= 25) countPoints = 23;
+  else if (reviewCount <= 50) countPoints = 33;
+  else if (reviewCount <= 100) countPoints = 43;
+  else if (reviewCount <= 150) countPoints = 50;
+  else if (reviewCount <= 200) countPoints = 57;
+  else countPoints = 60;
 
   score += countPoints;
   findings.push({
     label: 'Review Count',
     value: reviewCount + ' review' + (reviewCount !== 1 ? 's' : ''),
     points: countPoints,
-    maxPoints: 18,
+    maxPoints: 60,
   });
 
-  // Star rating (0-12)
+  // Star rating (0-40)
   var ratingPoints = 0;
   if (rating > 0) {
-    if (rating >= 4.9) ratingPoints = 12;
-    else if (rating >= 4.7) ratingPoints = 11;
-    else if (rating >= 4.5) ratingPoints = 10;
-    else if (rating >= 4.3) ratingPoints = 8;
-    else if (rating >= 4.0) ratingPoints = 6;
-    else if (rating >= 3.5) ratingPoints = 4;
-    else if (rating >= 3.0) ratingPoints = 2;
-    else ratingPoints = 1;
+    if (rating >= 4.9) ratingPoints = 40;
+    else if (rating >= 4.7) ratingPoints = 37;
+    else if (rating >= 4.5) ratingPoints = 33;
+    else if (rating >= 4.3) ratingPoints = 27;
+    else if (rating >= 4.0) ratingPoints = 20;
+    else if (rating >= 3.5) ratingPoints = 13;
+    else if (rating >= 3.0) ratingPoints = 7;
+    else ratingPoints = 3;
   }
   score += ratingPoints;
   findings.push({
     label: 'Average Rating',
     value: rating > 0 ? rating.toFixed(1) + ' stars' : 'No rating',
     points: ratingPoints,
-    maxPoints: 12,
+    maxPoints: 40,
   });
 
-  // Total: 18+12 = 30
+  // Total: 60+40 = 100
   return { score: score, findings: findings };
 }
 
 function calculateSearchScore(keywordResults, place) {
   var score = 0;
 
-  // Keyword rankings (0-14 from ranking positions)
+  // Keyword rankings (0-70 from ranking positions)
   var kwScore = 0;
   if (keywordResults && keywordResults.length > 0) {
-    var maxPerKeyword = 7;
     keywordResults.forEach(function(kw) {
       var kwPoints = 0;
       if (kw.position !== null) {
         var pos = kw.position;
-        if (pos <= 3) kwPoints = 7;
-        else if (pos <= 5) kwPoints = 5;
-        else if (pos <= 10) kwPoints = 4;
-        else if (pos <= 15) kwPoints = 2;
-        else kwPoints = 1;
+        if (pos <= 3) kwPoints = 35;
+        else if (pos <= 5) kwPoints = 25;
+        else if (pos <= 10) kwPoints = 20;
+        else if (pos <= 15) kwPoints = 10;
+        else kwPoints = 5;
       }
       kwScore += kwPoints;
     });
-    kwScore = Math.min(kwScore, 14);
+    kwScore = Math.min(kwScore, 70);
   }
   score += kwScore;
 
-  // GBP completeness (0-6)
+  // GBP completeness (0-30)
   var gbpScore = 0;
   if (place) {
-    if (place.photos && place.photos.length >= 5) gbpScore += 2;
-    else if (place.photos && place.photos.length > 0) gbpScore += 1;
-    if (place.currentOpeningHours && place.currentOpeningHours.periods) gbpScore += 2;
-    if (place.nationalPhoneNumber) gbpScore += 1;
-    if (place.editorialSummary && place.editorialSummary.text) gbpScore += 1;
+    if (place.photos && place.photos.length >= 5) gbpScore += 10;
+    else if (place.photos && place.photos.length > 0) gbpScore += 5;
+    if (place.currentOpeningHours && place.currentOpeningHours.periods) gbpScore += 10;
+    if (place.nationalPhoneNumber) gbpScore += 5;
+    if (place.editorialSummary && place.editorialSummary.text) gbpScore += 5;
   }
   score += gbpScore;
 
-  // Total: 14+6 = 20
-  return { score: Math.min(score, 20) };
+  // Total: 70+30 = 100
+  return { score: Math.min(score, 100) };
 }
 
 function calculateExperienceScore(htmlAnalysis) {
@@ -609,23 +604,23 @@ function calculateExperienceScore(htmlAnalysis) {
 
   if (!htmlAnalysis) return { score: 0 };
 
-  // Mobile-friendly (0-6): viewport + clickable phone + responsive signals
-  if (htmlAnalysis.hasViewport) score += 3;
-  if (htmlAnalysis.hasClickablePhone) score += 3;
+  // Mobile-friendly (0-30): viewport + clickable phone
+  if (htmlAnalysis.hasViewport) score += 15;
+  if (htmlAnalysis.hasClickablePhone) score += 15;
 
-  // Booking/form (0-6)
-  if (htmlAnalysis.hasBooking) score += 6;
+  // Booking/form (0-30)
+  if (htmlAnalysis.hasBooking) score += 30;
 
-  // Modern design (0-4): good UX proxy
-  if (htmlAnalysis.modernSignals >= 6) score += 4;
-  else if (htmlAnalysis.modernSignals >= 4) score += 2;
+  // Modern design (0-20): good UX proxy
+  if (htmlAnalysis.modernSignals >= 6) score += 20;
+  else if (htmlAnalysis.modernSignals >= 4) score += 10;
 
-  // Page structure (0-4)
-  if (htmlAnalysis.semanticCount >= 3) score += 2;
-  if (htmlAnalysis.properHeadings) score += 2;
+  // Page structure (0-20)
+  if (htmlAnalysis.semanticCount >= 3) score += 10;
+  if (htmlAnalysis.properHeadings) score += 10;
 
-  // Total: 6+6+4+4 = 20
-  return { score: Math.min(score, 20) };
+  // Total: 30+30+20+20 = 100
+  return { score: Math.min(score, 100) };
 }
 
 // --- Findings Generation ---
@@ -638,11 +633,11 @@ function generateFindings(prospect, competitors, scoring) {
   // Website findings
   if (!prospect.websiteUrl) {
     findings.push({ type: 'critical', text: biz + ' has no website. Potential clients searching online have no way to learn about services, see pricing, or book appointments \u2014 they\'ll go to a competitor who does.' });
-  } else if (scoring.website.score <= 5) {
+  } else if (scoring.website.score <= 17) {
     findings.push({ type: 'critical', text: 'The website is in poor shape \u2014 scoring only ' + scoring.website.score + ' out of ' + scoring.website.max + '. Critical issues with design, SEO, or functionality are costing potential clients.' });
-  } else if (scoring.website.score <= 15) {
+  } else if (scoring.website.score <= 50) {
     findings.push({ type: 'warning', text: 'The website needs significant improvement (' + scoring.website.score + '/' + scoring.website.max + '). Missing modern design elements, weak CTAs, or poor structure are hurting conversion rates.' });
-  } else if (scoring.website.score >= 25) {
+  } else if (scoring.website.score >= 80) {
     findings.push({ type: 'positive', text: 'Strong website quality (' + scoring.website.score + '/' + scoring.website.max + '). Good foundation with modern design and clear calls-to-action.' });
   }
 
@@ -689,9 +684,9 @@ function generateFindings(prospect, competitors, scoring) {
   }
 
   // Search visibility
-  if (scoring.search.score <= 5) {
+  if (scoring.search.score <= 25) {
     findings.push({ type: 'critical', text: 'Very low search visibility (' + scoring.search.score + '/' + scoring.search.max + '). ' + biz + ' isn\'t showing up when potential clients search for these services in the area.' });
-  } else if (scoring.search.score >= 15) {
+  } else if (scoring.search.score >= 75) {
     findings.push({ type: 'positive', text: 'Good search visibility (' + scoring.search.score + '/' + scoring.search.max + '). Ranking well for local keywords drives consistent organic traffic from high-intent clients.' });
   }
 
@@ -708,9 +703,9 @@ function generateFindings(prospect, competitors, scoring) {
   }
 
   // Client experience
-  if (scoring.experience.score <= 6) {
+  if (scoring.experience.score <= 30) {
     findings.push({ type: 'warning', text: 'The client experience needs work (' + scoring.experience.score + '/' + scoring.experience.max + '). Missing online booking, poor mobile experience, or hard-to-navigate site structure loses potential clients.' });
-  } else if (scoring.experience.score >= 16) {
+  } else if (scoring.experience.score >= 80) {
     findings.push({ type: 'positive', text: 'Strong client experience (' + scoring.experience.score + '/' + scoring.experience.max + '). Easy booking, mobile-friendly, and well-structured for visitors.' });
   }
 
@@ -723,22 +718,22 @@ function generateFindings(prospect, competitors, scoring) {
 
 // --- Main Handler ---
 
-module.exports = async function handler(req) {
+module.exports = async function handler(req, res) {
   // CORS preflight
   if (req.method === 'OPTIONS') {
-    return jsonResponse(200, {});
+    return sendJson(res, 200, {});
   }
 
   if (req.method !== 'POST') {
-    return jsonResponse(405, { error: 'Method not allowed' });
+    return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
   try {
-    const body = await req.json();
+    const body = req.body;
     const { businessName, city, state, websiteUrl, businessType } = body;
 
     if (!businessName || !city) {
-      return jsonResponse(400, { error: 'Business name and city are required' });
+      return sendJson(res,400, { error: 'Business name and city are required' });
     }
 
     // Run all analyses in parallel
@@ -767,7 +762,7 @@ module.exports = async function handler(req) {
     var searchScore = calculateSearchScore(keywordResults, placeResult);
     var experienceScore = calculateExperienceScore(htmlAnalysis);
 
-    var total = websiteScore.score + reviewScore.score + searchScore.score + experienceScore.score;
+    var total = Math.round((websiteScore.score + reviewScore.score + searchScore.score + experienceScore.score) / 4);
 
     var grade;
     if (total >= 90) grade = 'A';
@@ -789,10 +784,10 @@ module.exports = async function handler(req) {
     };
 
     var scoring = {
-      website: { score: websiteScore.score, max: 30 },
-      reviews: { score: reviewScore.score, max: 30 },
-      search: { score: searchScore.score, max: 20 },
-      experience: { score: experienceScore.score, max: 20 },
+      website: { score: websiteScore.score, max: 100 },
+      reviews: { score: reviewScore.score, max: 100 },
+      search: { score: searchScore.score, max: 100 },
+      experience: { score: experienceScore.score, max: 100 },
       total: total,
       grade: grade,
     };
@@ -807,7 +802,7 @@ module.exports = async function handler(req) {
       };
     });
 
-    return jsonResponse(200, {
+    return sendJson(res,200, {
       success: true,
       prospect: prospect,
       competitors: competitors,
@@ -817,6 +812,6 @@ module.exports = async function handler(req) {
     });
   } catch (err) {
     console.error('Analysis failed:', err);
-    return jsonResponse(500, { error: 'Analysis failed: ' + err.message });
+    return sendJson(res,500, { error: 'Analysis failed: ' + err.message });
   }
 };
