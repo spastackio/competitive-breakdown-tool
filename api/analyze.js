@@ -809,6 +809,8 @@ module.exports = async function handler(req, res) {
       scoring: scoring,
       findings: findings,
       rankings: rankings,
+      websiteFindings: websiteScore.findings || [],
+      reviewFindings: reviewScore.findings || [],
     });
   } catch (err) {
     console.error('Analysis failed:', err);

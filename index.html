@@ -3,167 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Competitive Breakdown — SpaStack</title>
+  <title>Competitive Breakdown | See How You Compare Locally</title>
+  <meta name="description" content="Free competitive analysis for med spas. See how your online presence stacks up against local competitors — website, reviews, search rankings, and more.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%231A1F2E'/%3E%3Cpath d='M10 16l4 4 8-8' stroke='%234A90E2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="mode-input">
+<body>
 
-  <!-- ============================================= -->
-  <!-- INPUT VIEW                                     -->
-  <!-- ============================================= -->
-  <div class="input-view">
-    <header class="input-header">
-      <div class="logo">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>SpaStack</span>
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="https://www.spastack.io" class="nav-logo">Spa Stack</a>
+    <a href="https://www.spastack.io/booking.html" class="nav-cta">Book a Call</a>
+  </nav>
+
+  <!-- Landing Page -->
+  <div id="landing-page">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg-grid"></div>
+      <div class="hero-content">
+        <p class="hero-badge">Free Tool</p>
+        <h1>See How You <span class="hero-highlight">Stack Up</span> Against Your Competition</h1>
+        <p class="hero-sub">Get a full competitive breakdown of your online presence in under a minute. We analyze your website, reviews, search visibility, and client experience &mdash; then compare you to local competitors.</p>
+        <a href="#form-section" class="hero-cta">Get My Breakdown</a>
       </div>
-      <h1>Competitive Breakdown</h1>
-      <p class="subtitle">Enter a business below and we'll pull everything automatically.</p>
-    </header>
-
-    <section class="input-section">
-      <form id="analyzeForm" autocomplete="off">
-        <div class="form-grid">
-          <div class="form-group span-2">
-            <label for="businessName">Business Name</label>
-            <input type="text" id="businessName" placeholder="e.g. Glow Med Spa" required>
-          </div>
-          <div class="form-group">
-            <label for="city">City</label>
-            <input type="text" id="city" placeholder="e.g. Boise" required>
-          </div>
-          <div class="form-group">
-            <label for="state">State</label>
-            <input type="text" id="state" placeholder="e.g. Idaho" required>
-          </div>
-          <div class="form-group">
-            <label for="websiteUrl">Website URL <span class="optional">(optional)</span></label>
-            <input type="url" id="websiteUrl" placeholder="https://...">
-          </div>
-          <div class="form-group">
-            <label for="businessType">Business Type</label>
-            <select id="businessType" required>
-              <option value="Med Spa">Med Spa</option>
-              <option value="Massage Therapist">Massage Therapist</option>
-              <option value="Wellness Center">Wellness Center</option>
-            </select>
+      <div class="hero-visual">
+        <div class="preview-gauge">
+          <svg viewBox="0 0 200 200" class="preview-svg">
+            <circle cx="100" cy="100" r="85" class="preview-bg" />
+            <circle cx="100" cy="100" r="85" class="preview-fill" />
+          </svg>
+          <div class="preview-center">
+            <span class="preview-q">?</span>
+            <span class="preview-label">/100</span>
           </div>
         </div>
-        <div class="input-actions">
-          <button type="submit" class="btn-analyze" id="analyzeBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Analyze
-          </button>
-        </div>
-      </form>
+        <div class="float-tag tag-website">Website</div>
+        <div class="float-tag tag-reviews">Reviews</div>
+        <div class="float-tag tag-search">Search</div>
+        <div class="float-tag tag-experience">Experience</div>
+      </div>
     </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+      <div class="stats-inner">
+        <div class="stat">
+          <span class="stat-number">4</span>
+          <span class="stat-label">Categories Scored</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">~60s</span>
+          <span class="stat-label">To Get Results</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Free Forever</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- What We Analyze -->
+    <section class="what-section">
+      <p class="section-tag">What We Analyze</p>
+      <h2 class="section-title">Four Pillars of Your Online Presence</h2>
+      <div class="pillars-grid">
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Website Quality</h3>
+          <p class="pillar-points">0–100</p>
+          <p>Speed, SEO, mobile readiness, design quality, CTAs, trust signals, and booking capability. A weak website means lost clients.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <h3>Google Reviews</h3>
+          <p class="pillar-points">0–100</p>
+          <p>Review count and star rating. 93% of consumers read reviews before booking. We compare you head-to-head with local competitors.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3>Search Visibility</h3>
+          <p class="pillar-points">0–100</p>
+          <p>Keyword rankings and Google Business Profile completeness. If you're not on page one, you're invisible to potential clients.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h3>Client Experience</h3>
+          <p class="pillar-points">0–100</p>
+          <p>Mobile-friendliness, online booking, modern design, and page structure. Great experience converts visitors into bookings.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="form-section" id="form-section">
+      <div class="form-wrapper">
+        <div class="form-text">
+          <p class="section-tag">Free Analysis</p>
+          <h2 class="section-title">Get Your Breakdown</h2>
+          <p class="form-description">Enter your business details and we'll analyze your online presence, find your competitors, and show you exactly where you stand.</p>
+          <div class="form-trust">
+            <div class="trust-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="trust-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Private &amp; secure</span>
+            </div>
+            <div class="trust-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="trust-icon"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Real Google data</span>
+            </div>
+            <div class="trust-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="trust-icon"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>No cost, ever</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <form id="analyzeForm" autocomplete="off" novalidate>
+            <div class="form-group">
+              <label for="businessName">Business Name *</label>
+              <input type="text" id="businessName" placeholder="e.g. Glow Med Spa" required>
+            </div>
+            <div class="form-group">
+              <label for="businessType">Business Type *</label>
+              <select id="businessType" required>
+                <option value="Med Spa">Med Spa</option>
+                <option value="Massage Therapist">Massage Therapist</option>
+                <option value="Wellness Center">Wellness Center</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" placeholder="Boise" required>
+              </div>
+              <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" id="state" placeholder="Idaho">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="websiteUrl">Website URL <span class="optional">(optional)</span></label>
+              <input type="url" id="websiteUrl" placeholder="https://www.yourmedspa.com">
+            </div>
+            <button type="submit" class="btn-primary" id="analyzeBtn">Get My Breakdown</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- ============================================= -->
-  <!-- LOADING VIEW                                   -->
-  <!-- ============================================= -->
-  <div class="loading-view">
-    <div class="loading-container">
-      <div class="loading-brand">
-        <svg width="32" height="32" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>SpaStack</span>
+  <!-- Loading State -->
+  <section id="loading-section" class="fullscreen-state hidden">
+    <div class="loading-content">
+      <div class="loading-gauge">
+        <svg viewBox="0 0 200 200" class="loading-svg">
+          <circle cx="100" cy="100" r="85" class="loading-bg" />
+          <circle cx="100" cy="100" r="85" class="loading-fill" />
+        </svg>
       </div>
-      <h2 class="loading-title">Analyzing <span id="loadingBusinessName">...</span></h2>
+      <h2>Analyzing <span id="loadingBusinessName">...</span></h2>
       <div class="loading-steps">
-        <div class="loading-step" data-step="1">
-          <div class="step-icon">
-            <div class="spinner"></div>
-            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
+        <div class="loading-step" id="step-1">
+          <span class="step-dot"></span>
           <span class="step-text" id="stepText1">Searching for business...</span>
         </div>
-        <div class="loading-step" data-step="2">
-          <div class="step-icon">
-            <div class="spinner"></div>
-            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
+        <div class="loading-step" id="step-2">
+          <span class="step-dot"></span>
           <span class="step-text">Analyzing website quality...</span>
         </div>
-        <div class="loading-step" data-step="3">
-          <div class="step-icon">
-            <div class="spinner"></div>
-            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
+        <div class="loading-step" id="step-3">
+          <span class="step-dot"></span>
           <span class="step-text">Checking search rankings...</span>
         </div>
-        <div class="loading-step" data-step="4">
-          <div class="step-icon">
-            <div class="spinner"></div>
-            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
+        <div class="loading-step" id="step-4">
+          <span class="step-dot"></span>
           <span class="step-text">Finding local competitors...</span>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ============================================= -->
-  <!-- REPORT VIEW                                    -->
-  <!-- ============================================= -->
-  <div class="report-view">
-    <button class="btn-back" id="backToInput">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      New Analysis
-    </button>
-
-    <!-- Report Header -->
-    <header class="report-header">
-      <div class="report-brand">
-        <svg width="32" height="32" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>SpaStack</span>
+  <!-- Results State -->
+  <section id="results-section" class="hidden">
+    <div class="results-container">
+      <!-- Score Hero -->
+      <div class="results-hero">
+        <p class="section-tag">Your Results</p>
+        <h2 id="reportMeta">Business Name</h2>
+        <div class="score-gauge">
+          <svg viewBox="0 0 200 200" class="gauge-svg">
+            <circle cx="100" cy="100" r="85" class="gauge-bg" />
+            <circle cx="100" cy="100" r="85" class="gauge-fill" id="gaugeFill"
+              stroke-dasharray="534" stroke-dashoffset="534" />
+          </svg>
+          <div class="score-center">
+            <span class="score-number" id="scoreNumber">0</span>
+            <span class="score-max">/100</span>
+          </div>
+        </div>
+        <div class="score-label" id="scoreLabel">Analyzing...</div>
       </div>
-      <h1 class="report-title">Competitive Breakdown</h1>
-      <p class="report-meta" id="reportMeta"></p>
-    </header>
 
-    <!-- Grade Circle -->
-    <div class="grade-section">
-      <div class="grade-circle" id="gradeCircle">
-        <span class="grade-letter" id="gradeLetter">&mdash;</span>
-        <span class="grade-score" id="gradeScore">0 / 100</span>
+      <!-- Breakdown Cards -->
+      <div class="breakdown-grid" id="breakdownGrid"></div>
+
+      <!-- Review Comparison -->
+      <div class="breakdown-card" id="reviewComparisonCard" style="display:none;">
+        <div class="breakdown-header">
+          <div class="breakdown-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Review Comparison</h3>
+        </div>
+        <div id="reviewChart"></div>
       </div>
-      <p class="grade-label" id="gradeLabel">Overall Online Presence</p>
+
+      <!-- Search Rankings -->
+      <div class="breakdown-card" id="rankingsCard" style="display:none;">
+        <div class="breakdown-header">
+          <div class="breakdown-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <h3>Search Rankings</h3>
+        </div>
+        <div id="rankingsList"></div>
+      </div>
+
+      <!-- Recommendations (Findings) -->
+      <div class="recommendations-card" id="recommendationsCard">
+        <h3>Key Findings</h3>
+        <div class="recommendations-list" id="findingsList"></div>
+      </div>
+
+      <!-- CTA -->
+      <div class="results-cta">
+        <h3>Want Help Closing These Gaps?</h3>
+        <p>We build websites, automate review collection, and optimize Google profiles for med spas. One flat fee. No contracts.</p>
+        <a href="https://www.spastack.io/booking.html" target="_blank" rel="noopener" class="btn-primary">
+          Book a Free Strategy Call
+        </a>
+        <p class="disclaimer">15 minutes. No pressure. We'll walk through your results.</p>
+      </div>
+
+      <button class="btn-secondary" id="backToInput">Analyze Another Business</button>
     </div>
+  </section>
 
-    <!-- Score Breakdown -->
-    <section class="score-section">
-      <h2>Score Breakdown</h2>
-      <div class="score-bars" id="scoreBars"></div>
-    </section>
+  <!-- Error State -->
+  <section id="error-section" class="fullscreen-state hidden">
+    <div class="error-content">
+      <div class="error-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <h2>Something Went Wrong</h2>
+      <p id="errorMessage">We couldn't analyze this business right now. Please try again.</p>
+      <button class="btn-primary" id="retryBtn">Try Again</button>
+    </div>
+  </section>
 
-    <!-- Review Comparison -->
-    <section class="chart-section">
-      <h2>Review Comparison</h2>
-      <div class="review-chart" id="reviewChart"></div>
-    </section>
-
-    <!-- Search Rankings -->
-    <section class="rankings-section" id="rankingsSection" style="display:none;">
-      <h2>Search Rankings</h2>
-      <div class="rankings-list" id="rankingsList"></div>
-    </section>
-
-    <!-- Key Findings -->
-    <section class="findings-section">
-      <h2>Key Findings</h2>
-      <div class="findings-list" id="findingsList"></div>
-    </section>
-
-    <!-- CTA Footer -->
-    <footer class="report-cta">
-      <p class="cta-text">Want help closing these gaps?</p>
-      <p class="cta-contact">Aidan @ SpaStack</p>
-      <p class="cta-sub">aidan@spastack.io</p>
-    </footer>
-  </div>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <a href="https://www.spastack.io" class="footer-logo">Spa Stack</a>
+      <p>&copy; 2026 Spa Stack. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script src="app.js"></script>
 </body>
