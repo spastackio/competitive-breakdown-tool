@@ -835,6 +835,87 @@ body {
 .finding-badge.okay { background: #FFFBEB; color: #CA8A04; }
 .finding-badge.bad { background: #FEF2F2; color: #DC2626; }
 
+/* --- Competitor Cards --- */
+.competitor-item {
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.competitor-item:last-child { margin-bottom: 0; }
+
+.competitor-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.competitor-rank {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-light);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.competitor-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.competitor-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.competitor-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.competitor-stat-value {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  color: var(--text);
+}
+
+.competitor-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+}
+
+.competitor-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.competitor-detail {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.detail-good {
+  background: #F0FDF4;
+  color: #16A34A;
+}
+
+.detail-bad {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
 /* --- Review Chart --- */
 .review-row {
   display: flex;

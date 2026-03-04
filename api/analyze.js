@@ -291,9 +291,9 @@ async function discoverCompetitors(businessType, city, state, prospectName) {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.photos,places.currentOpeningHours',
+        'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.photos,places.currentOpeningHours,places.nationalPhoneNumber',
       },
-      body: JSON.stringify({ textQuery: query, maxResultCount: 8 }),
+      body: JSON.stringify({ textQuery: query, maxResultCount: 10 }),
       timeout: 30000,
     });
 
@@ -307,15 +307,17 @@ async function discoverCompetitors(businessType, city, state, prospectName) {
         const normalized = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
         return !normalized.includes(normalizedProspect) && !normalizedProspect.includes(normalized);
       })
-      .slice(0, 3)
-      .map(function(p) {
+      .slice(0, 2)
+      .map(function(p, idx) {
         return {
           name: (p.displayName && p.displayName.text) || 'Unknown',
+          rank: idx + 1,
           reviewCount: p.userRatingCount || 0,
           rating: p.rating || 0,
           websiteUrl: p.websiteUri || null,
-          hasBooking: false,
-          hasAds: false,
+          photoCount: p.photos ? p.photos.length : 0,
+          hasHours: !!(p.currentOpeningHours && p.currentOpeningHours.periods),
+          hasPhone: !!p.nationalPhoneNumber,
         };
       });
   } catch (err) {
@@ -402,113 +404,74 @@ function calculateWebsiteScore(websiteUrl, htmlAnalysis) {
   var score = 0;
 
   if (!websiteUrl) {
-    findings.push({ label: 'No Website', value: 'Not found', points: 0, maxPoints: 30, critical: true });
+    findings.push({ label: 'No Website', value: 'Not found', points: 0, maxPoints: 100 });
     return { score: 0, findings: findings };
   }
 
   if (!htmlAnalysis) {
-    findings.push({ label: 'Website Status', value: 'Failed to load', points: 0, maxPoints: 30, critical: true });
+    findings.push({ label: 'Website Status', value: 'Failed to load', points: 0, maxPoints: 100 });
     return { score: 0, findings: findings };
   }
 
-  // HTTPS (0-7)
+  // 1. Speed & Security (0-25): HTTPS + load speed
+  var speedSecPoints = 0;
   var isHttps = websiteUrl.startsWith('https://');
-  var sslPoints = isHttps ? 7 : 0;
-  score += sslPoints;
-  findings.push({ label: 'HTTPS/SSL', value: isHttps ? 'Secure' : 'Not Secure', points: sslPoints, maxPoints: 7 });
-
-  // Load Speed (0-10)
-  var speedPoints = 0;
+  if (isHttps) speedSecPoints += 10;
   var speedLabel = 'Unknown';
   if (htmlAnalysis.loadTimeMs !== null) {
     var sec = htmlAnalysis.loadTimeMs / 1000;
-    if (sec < 1.5) { speedPoints = 10; speedLabel = sec.toFixed(1) + 's (Fast)'; }
-    else if (sec < 3) { speedPoints = 7; speedLabel = sec.toFixed(1) + 's (Good)'; }
-    else if (sec < 5) { speedPoints = 3; speedLabel = sec.toFixed(1) + 's (Slow)'; }
-    else { speedPoints = 0; speedLabel = sec.toFixed(1) + 's (Very Slow)'; }
+    if (sec < 1.5) { speedSecPoints += 15; speedLabel = sec.toFixed(1) + 's'; }
+    else if (sec < 3) { speedSecPoints += 10; speedLabel = sec.toFixed(1) + 's'; }
+    else if (sec < 5) { speedSecPoints += 5; speedLabel = sec.toFixed(1) + 's'; }
+    else { speedLabel = sec.toFixed(1) + 's'; }
   }
-  score += speedPoints;
-  findings.push({ label: 'Load Speed', value: speedLabel, points: speedPoints, maxPoints: 10 });
+  score += speedSecPoints;
+  var ssVal = (isHttps ? 'Secure' : 'No SSL') + (speedLabel !== 'Unknown' ? ', ' + speedLabel : '');
+  findings.push({ label: 'Speed & Security', value: ssVal, points: speedSecPoints, maxPoints: 25 });
 
-  // SEO Fundamentals (0-13)
+  // 2. SEO & Discoverability (0-25): title, meta, canonical, headings, schema
   var seoPoints = 0;
-  var seoDetails = [];
-  if (htmlAnalysis.hasTitleTag) { seoPoints += 4; seoDetails.push('title'); }
-  if (htmlAnalysis.hasMetaDescription) { seoPoints += 3; seoDetails.push('meta desc'); }
-  if (htmlAnalysis.hasCanonical) { seoPoints += 3; seoDetails.push('canonical'); }
-  if (htmlAnalysis.properHeadings) { seoPoints += 3; seoDetails.push('headings'); }
-  var seoLabel = seoPoints >= 10 ? 'Good' : seoPoints >= 7 ? 'Partial' : 'Poor';
-  if (seoDetails.length > 0) seoLabel += ' (' + seoDetails.join(', ') + ')';
+  var seoHits = [];
+  if (htmlAnalysis.hasTitleTag) { seoPoints += 6; seoHits.push('title'); }
+  if (htmlAnalysis.hasMetaDescription) { seoPoints += 6; seoHits.push('meta'); }
+  if (htmlAnalysis.hasCanonical) { seoPoints += 4; }
+  if (htmlAnalysis.properHeadings) { seoPoints += 5; }
+  if (htmlAnalysis.hasSchema) { seoPoints += 4; }
   score += seoPoints;
-  findings.push({ label: 'SEO Fundamentals', value: seoLabel, points: seoPoints, maxPoints: 13 });
+  var seoLabel = seoPoints >= 20 ? 'Strong' : seoPoints >= 12 ? 'Partial' : 'Weak';
+  findings.push({ label: 'SEO & Discoverability', value: seoLabel, points: seoPoints, maxPoints: 25 });
 
-  // Mobile Ready (0-7)
-  var mobilePoints = 0;
-  if (htmlAnalysis.hasViewport) mobilePoints += 4;
-  if (htmlAnalysis.hasClickablePhone) mobilePoints += 3;
-  var mobileLabel = mobilePoints >= 7 ? 'Yes' : mobilePoints >= 3 ? 'Partial' : 'No';
-  score += mobilePoints;
-  findings.push({ label: 'Mobile Ready', value: mobileLabel, points: mobilePoints, maxPoints: 7 });
-
-  // Accessibility (0-7)
-  var a11yPoints = 0;
-  if (htmlAnalysis.altCoverage >= 0.5) a11yPoints += 4;
-  if (htmlAnalysis.hasLangAttr && (htmlAnalysis.hasAriaLabels || htmlAnalysis.hasRoleAttrs)) a11yPoints += 3;
-  var a11yLabel = a11yPoints >= 7 ? 'Good' : a11yPoints >= 3 ? 'Partial' : 'Poor';
-  score += a11yPoints;
-  findings.push({ label: 'Accessibility', value: a11yLabel, points: a11yPoints, maxPoints: 7 });
-
-  // CTA Effectiveness (0-13)
-  var ctaPoints = 0;
-  var ctaLabel = 'Missing';
-  if (htmlAnalysis.ctaStrength === 'strong') { ctaPoints = 13; ctaLabel = 'Strong & Prominent'; }
-  else if (htmlAnalysis.ctaStrength === 'good') { ctaPoints = 10; ctaLabel = 'Good'; }
-  else if (htmlAnalysis.ctaStrength === 'present') { ctaPoints = 7; ctaLabel = 'Needs Work'; }
-  else if (htmlAnalysis.ctaStrength === 'weak') { ctaPoints = 3; ctaLabel = 'Weak'; }
-  score += ctaPoints;
-  findings.push({ label: 'Call-to-Action', value: ctaLabel, points: ctaPoints, maxPoints: 13 });
-
-  // Modern Design (0-13)
+  // 3. Design & UX (0-25): modern design, mobile, CTA, booking
+  var uxPoints = 0;
   var ms = htmlAnalysis.modernSignals;
-  var designPoints = 0;
-  var designLabel = 'Outdated';
-  if (ms >= 8) { designPoints = 13; designLabel = 'Modern (' + ms + '/10)'; }
-  else if (ms >= 6) { designPoints = 10; designLabel = 'Mostly Modern (' + ms + '/10)'; }
-  else if (ms >= 4) { designPoints = 7; designLabel = 'Dated (' + ms + '/10)'; }
-  else if (ms >= 2) { designPoints = 3; designLabel = 'Basic (' + ms + '/10)'; }
-  score += designPoints;
-  findings.push({ label: 'Modern Design', value: designLabel, points: designPoints, maxPoints: 13 });
+  if (ms >= 8) uxPoints += 7;
+  else if (ms >= 6) uxPoints += 5;
+  else if (ms >= 4) uxPoints += 3;
+  if (htmlAnalysis.hasViewport) uxPoints += 5;
+  if (htmlAnalysis.hasClickablePhone) uxPoints += 3;
+  if (htmlAnalysis.ctaStrength === 'strong') uxPoints += 5;
+  else if (htmlAnalysis.ctaStrength === 'good') uxPoints += 4;
+  else if (htmlAnalysis.ctaStrength === 'present') uxPoints += 2;
+  if (htmlAnalysis.hasBooking) uxPoints += 5;
+  uxPoints = Math.min(uxPoints, 25);
+  score += uxPoints;
+  var uxLabel = uxPoints >= 20 ? 'Modern & Effective' : uxPoints >= 12 ? 'Needs Improvement' : 'Outdated';
+  findings.push({ label: 'Design & User Experience', value: uxLabel, points: uxPoints, maxPoints: 25 });
 
-  // Booking / Contact Form (0-7)
-  var bookingPoints = htmlAnalysis.hasBooking ? 7 : 0;
-  score += bookingPoints;
-  findings.push({ label: 'Booking/Contact Form', value: htmlAnalysis.hasBooking ? 'Found' : 'Missing', points: bookingPoints, maxPoints: 7 });
-
-  // Page Structure (0-10)
-  var structurePoints = 0;
-  if (htmlAnalysis.semanticCount >= 3) structurePoints += 4;
-  if (htmlAnalysis.properHeadings) structurePoints += 3;
-  if (htmlAnalysis.altCoverage >= 0.5) structurePoints += 3;
-  var structureLabel = structurePoints >= 10 ? 'Well Structured' : structurePoints >= 3 ? 'Partial' : 'Poor';
-  score += structurePoints;
-  findings.push({ label: 'Page Structure', value: structureLabel, points: structurePoints, maxPoints: 10 });
-
-  // Trust & Social Proof (0-10)
+  // 4. Trust & Credibility (0-25): testimonials, social proof, accessibility, structure
   var trustPoints = 0;
-  if (htmlAnalysis.hasTestimonials) trustPoints += 4;
-  if (htmlAnalysis.socialLinks > 0) trustPoints += 3;
-  if (htmlAnalysis.hasTrustSignals) trustPoints += 3;
-  var trustLabel = trustPoints >= 7 ? 'Strong' : trustPoints >= 3 ? 'Some' : 'Missing';
+  if (htmlAnalysis.hasTestimonials) trustPoints += 7;
+  if (htmlAnalysis.socialLinks > 0) trustPoints += 5;
+  if (htmlAnalysis.hasTrustSignals) trustPoints += 5;
+  if (htmlAnalysis.altCoverage >= 0.5) trustPoints += 4;
+  if (htmlAnalysis.semanticCount >= 3) trustPoints += 4;
+  trustPoints = Math.min(trustPoints, 25);
   score += trustPoints;
-  findings.push({ label: 'Trust & Social Proof', value: trustLabel, points: trustPoints, maxPoints: 10 });
+  var trustLabel = trustPoints >= 18 ? 'Strong' : trustPoints >= 10 ? 'Some' : 'Weak';
+  findings.push({ label: 'Trust & Credibility', value: trustLabel, points: trustPoints, maxPoints: 25 });
 
-  // Schema Markup (0-3)
-  var schemaPoints = htmlAnalysis.hasSchema ? 3 : 0;
-  score += schemaPoints;
-  findings.push({ label: 'Schema Markup', value: htmlAnalysis.hasSchema ? 'Found' : 'Missing', points: schemaPoints, maxPoints: 3 });
-
-  // Total: 7+10+13+7+7+13+13+7+10+10+3 = 100
-  return { score: score, findings: findings };
+  // Total: 25+25+25+25 = 100
+  return { score: Math.min(score, 100), findings: findings };
 }
 
 function calculateReviewScore(place) {
@@ -563,64 +526,88 @@ function calculateReviewScore(place) {
 }
 
 function calculateSearchScore(keywordResults, place) {
+  var findings = [];
   var score = 0;
 
-  // Keyword rankings (0-70 from ranking positions)
+  // 1. Keyword Rankings (0-50)
   var kwScore = 0;
+  var rankedCount = 0;
   if (keywordResults && keywordResults.length > 0) {
     keywordResults.forEach(function(kw) {
-      var kwPoints = 0;
       if (kw.position !== null) {
-        var pos = kw.position;
-        if (pos <= 3) kwPoints = 35;
-        else if (pos <= 5) kwPoints = 25;
-        else if (pos <= 10) kwPoints = 20;
-        else if (pos <= 15) kwPoints = 10;
-        else kwPoints = 5;
+        rankedCount++;
+        if (kw.position <= 3) kwScore += 25;
+        else if (kw.position <= 5) kwScore += 18;
+        else if (kw.position <= 10) kwScore += 12;
+        else if (kw.position <= 15) kwScore += 6;
+        else kwScore += 3;
       }
-      kwScore += kwPoints;
     });
-    kwScore = Math.min(kwScore, 70);
+    kwScore = Math.min(kwScore, 50);
   }
   score += kwScore;
+  var kwLabel = rankedCount === 0 ? 'Not ranking' : rankedCount + '/' + (keywordResults ? keywordResults.length : 0) + ' keywords found';
+  findings.push({ label: 'Keyword Rankings', value: kwLabel, points: kwScore, maxPoints: 50 });
 
-  // GBP completeness (0-30)
+  // 2. Google Business Profile (0-50)
   var gbpScore = 0;
+  var gbpDetails = [];
   if (place) {
-    if (place.photos && place.photos.length >= 5) gbpScore += 10;
-    else if (place.photos && place.photos.length > 0) gbpScore += 5;
-    if (place.currentOpeningHours && place.currentOpeningHours.periods) gbpScore += 10;
-    if (place.nationalPhoneNumber) gbpScore += 5;
-    if (place.editorialSummary && place.editorialSummary.text) gbpScore += 5;
+    if (place.photos && place.photos.length >= 5) { gbpScore += 15; gbpDetails.push('photos'); }
+    else if (place.photos && place.photos.length > 0) { gbpScore += 7; gbpDetails.push('few photos'); }
+    if (place.currentOpeningHours && place.currentOpeningHours.periods) { gbpScore += 15; gbpDetails.push('hours'); }
+    if (place.nationalPhoneNumber) { gbpScore += 10; gbpDetails.push('phone'); }
+    if (place.editorialSummary && place.editorialSummary.text) { gbpScore += 10; gbpDetails.push('description'); }
   }
   score += gbpScore;
+  var gbpLabel = gbpScore >= 40 ? 'Complete' : gbpScore >= 20 ? 'Partial' : place ? 'Incomplete' : 'Not found';
+  findings.push({ label: 'Google Business Profile', value: gbpLabel, points: gbpScore, maxPoints: 50 });
 
-  // Total: 70+30 = 100
-  return { score: Math.min(score, 100) };
+  // Total: 50+50 = 100
+  return { score: Math.min(score, 100), findings: findings };
 }
 
 function calculateExperienceScore(htmlAnalysis) {
+  var findings = [];
   var score = 0;
 
-  if (!htmlAnalysis) return { score: 0 };
+  if (!htmlAnalysis) {
+    findings.push({ label: 'No Website Data', value: 'N/A', points: 0, maxPoints: 100 });
+    return { score: 0, findings: findings };
+  }
 
-  // Mobile-friendly (0-30): viewport + clickable phone
-  if (htmlAnalysis.hasViewport) score += 15;
-  if (htmlAnalysis.hasClickablePhone) score += 15;
+  // 1. Mobile Experience (0-30)
+  var mobilePoints = 0;
+  if (htmlAnalysis.hasViewport) mobilePoints += 15;
+  if (htmlAnalysis.hasClickablePhone) mobilePoints += 15;
+  score += mobilePoints;
+  var mobileLabel = mobilePoints >= 30 ? 'Fully mobile-ready' : mobilePoints >= 15 ? 'Partially mobile-ready' : 'Not mobile-friendly';
+  findings.push({ label: 'Mobile Experience', value: mobileLabel, points: mobilePoints, maxPoints: 30 });
 
-  // Booking/form (0-30)
-  if (htmlAnalysis.hasBooking) score += 30;
+  // 2. Online Booking (0-30)
+  var bookingPoints = htmlAnalysis.hasBooking ? 30 : 0;
+  score += bookingPoints;
+  findings.push({ label: 'Online Booking', value: bookingPoints > 0 ? 'Available' : 'Not found', points: bookingPoints, maxPoints: 30 });
 
-  // Modern design (0-20): good UX proxy
-  if (htmlAnalysis.modernSignals >= 6) score += 20;
-  else if (htmlAnalysis.modernSignals >= 4) score += 10;
+  // 3. Modern Design (0-20)
+  var designPoints = 0;
+  var ms = htmlAnalysis.modernSignals;
+  if (ms >= 6) designPoints = 20;
+  else if (ms >= 4) designPoints = 10;
+  score += designPoints;
+  var designLabel = designPoints >= 20 ? 'Modern' : designPoints >= 10 ? 'Dated' : 'Outdated';
+  findings.push({ label: 'Visual Design', value: designLabel, points: designPoints, maxPoints: 20 });
 
-  // Page structure (0-20)
-  if (htmlAnalysis.semanticCount >= 3) score += 10;
-  if (htmlAnalysis.properHeadings) score += 10;
+  // 4. Page Structure (0-20)
+  var structPoints = 0;
+  if (htmlAnalysis.semanticCount >= 3) structPoints += 10;
+  if (htmlAnalysis.properHeadings) structPoints += 10;
+  score += structPoints;
+  var structLabel = structPoints >= 20 ? 'Well organized' : structPoints >= 10 ? 'Partial' : 'Poor';
+  findings.push({ label: 'Page Structure', value: structLabel, points: structPoints, maxPoints: 20 });
 
   // Total: 30+30+20+20 = 100
-  return { score: Math.min(score, 100) };
+  return { score: Math.min(score, 100), findings: findings };
 }
 
 // --- Findings Generation ---
@@ -811,6 +798,8 @@ module.exports = async function handler(req, res) {
       rankings: rankings,
       websiteFindings: websiteScore.findings || [],
       reviewFindings: reviewScore.findings || [],
+      searchFindings: searchScore.findings || [],
+      experienceFindings: experienceScore.findings || [],
     });
   } catch (err) {
     console.error('Analysis failed:', err);

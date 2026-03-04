@@ -248,8 +248,11 @@
     // Store total for animation
     document.getElementById('scoreNumber').setAttribute('data-target', total);
 
-    // Breakdown cards
+    // Breakdown cards (order: search, website, reviews, experience)
     renderBreakdownCards(scoring, data);
+
+    // Competitors detail
+    renderCompetitors(competitors);
 
     // Review comparison
     renderReviewChart(prospect, competitors);
@@ -266,10 +269,10 @@
     container.textContent = '';
 
     var categories = [
+      { key: 'search', label: 'Search Visibility', score: scoring.search.score, max: scoring.search.max, findings: data.searchFindings || [] },
       { key: 'website', label: 'Website Quality', score: scoring.website.score, max: scoring.website.max, findings: data.websiteFindings || [] },
       { key: 'reviews', label: 'Google Reviews', score: scoring.reviews.score, max: scoring.reviews.max, findings: data.reviewFindings || [] },
-      { key: 'search', label: 'Search Visibility', score: scoring.search.score, max: scoring.search.max, findings: [] },
-      { key: 'experience', label: 'Client Experience', score: scoring.experience.score, max: scoring.experience.max, findings: [] },
+      { key: 'experience', label: 'Client Experience', score: scoring.experience.score, max: scoring.experience.max, findings: data.experienceFindings || [] },
     ];
 
     categories.forEach(function (cat) {
@@ -305,6 +308,56 @@
       }
 
       container.appendChild(card);
+    });
+  }
+
+  function renderCompetitors(competitors) {
+    var card = document.getElementById('competitorsCard');
+    var container = document.getElementById('competitorsList');
+    container.textContent = '';
+
+    if (!competitors || competitors.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = '';
+
+    competitors.forEach(function (comp) {
+      var item = el('div', 'competitor-item');
+
+      var header = el('div', 'competitor-header');
+      var rank = el('span', 'competitor-rank', '#' + comp.rank);
+      header.appendChild(rank);
+      header.appendChild(el('span', 'competitor-name', comp.name));
+      item.appendChild(header);
+
+      var stats = el('div', 'competitor-stats');
+
+      var reviewStat = el('div', 'competitor-stat');
+      reviewStat.appendChild(el('span', 'competitor-stat-value', (comp.reviewCount || 0).toString()));
+      reviewStat.appendChild(el('span', 'competitor-stat-label', 'Reviews'));
+      stats.appendChild(reviewStat);
+
+      var ratingStat = el('div', 'competitor-stat');
+      ratingStat.appendChild(el('span', 'competitor-stat-value', comp.rating > 0 ? comp.rating.toFixed(1) + '\u2605' : 'N/A'));
+      ratingStat.appendChild(el('span', 'competitor-stat-label', 'Rating'));
+      stats.appendChild(ratingStat);
+
+      var photoStat = el('div', 'competitor-stat');
+      photoStat.appendChild(el('span', 'competitor-stat-value', (comp.photoCount || 0).toString()));
+      photoStat.appendChild(el('span', 'competitor-stat-label', 'Photos'));
+      stats.appendChild(photoStat);
+
+      item.appendChild(stats);
+
+      var details = el('div', 'competitor-details');
+      details.appendChild(el('span', 'competitor-detail ' + (comp.websiteUrl ? 'detail-good' : 'detail-bad'), comp.websiteUrl ? 'Has website' : 'No website'));
+      details.appendChild(el('span', 'competitor-detail ' + (comp.hasHours ? 'detail-good' : 'detail-bad'), comp.hasHours ? 'Hours listed' : 'No hours'));
+      details.appendChild(el('span', 'competitor-detail ' + (comp.hasPhone ? 'detail-good' : 'detail-bad'), comp.hasPhone ? 'Phone listed' : 'No phone'));
+      item.appendChild(details);
+
+      container.appendChild(item);
     });
   }
 
