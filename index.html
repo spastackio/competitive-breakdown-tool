@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competitive Breakdown — SpaStack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mode-input">
+
+  <!-- ============================================= -->
+  <!-- INPUT VIEW                                     -->
+  <!-- ============================================= -->
+  <div class="input-view">
+    <header class="input-header">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>SpaStack</span>
+      </div>
+      <h1>Competitive Breakdown</h1>
+      <p class="subtitle">Enter a business below and we'll pull everything automatically.</p>
+    </header>
+
+    <section class="input-section">
+      <form id="analyzeForm" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label for="businessName">Business Name</label>
+            <input type="text" id="businessName" placeholder="e.g. Glow Med Spa" required>
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" placeholder="e.g. Boise" required>
+          </div>
+          <div class="form-group">
+            <label for="state">State</label>
+            <input type="text" id="state" placeholder="e.g. Idaho" required>
+          </div>
+          <div class="form-group">
+            <label for="websiteUrl">Website URL <span class="optional">(optional)</span></label>
+            <input type="url" id="websiteUrl" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label for="businessType">Business Type</label>
+            <select id="businessType" required>
+              <option value="Med Spa">Med Spa</option>
+              <option value="Massage Therapist">Massage Therapist</option>
+              <option value="Wellness Center">Wellness Center</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-actions">
+          <button type="submit" class="btn-analyze" id="analyzeBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- ============================================= -->
+  <!-- LOADING VIEW                                   -->
+  <!-- ============================================= -->
+  <div class="loading-view">
+    <div class="loading-container">
+      <div class="loading-brand">
+        <svg width="32" height="32" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>SpaStack</span>
+      </div>
+      <h2 class="loading-title">Analyzing <span id="loadingBusinessName">...</span></h2>
+      <div class="loading-steps">
+        <div class="loading-step" data-step="1">
+          <div class="step-icon">
+            <div class="spinner"></div>
+            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="step-text" id="stepText1">Searching for business...</span>
+        </div>
+        <div class="loading-step" data-step="2">
+          <div class="step-icon">
+            <div class="spinner"></div>
+            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="step-text">Analyzing website quality...</span>
+        </div>
+        <div class="loading-step" data-step="3">
+          <div class="step-icon">
+            <div class="spinner"></div>
+            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="step-text">Checking search rankings...</span>
+        </div>
+        <div class="loading-step" data-step="4">
+          <div class="step-icon">
+            <div class="spinner"></div>
+            <svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="step-text">Finding local competitors...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================= -->
+  <!-- REPORT VIEW                                    -->
+  <!-- ============================================= -->
+  <div class="report-view">
+    <button class="btn-back" id="backToInput">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      New Analysis
+    </button>
+
+    <!-- Report Header -->
+    <header class="report-header">
+      <div class="report-brand">
+        <svg width="32" height="32" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4A90E2"/><path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>SpaStack</span>
+      </div>
+      <h1 class="report-title">Competitive Breakdown</h1>
+      <p class="report-meta" id="reportMeta"></p>
+    </header>
+
+    <!-- Grade Circle -->
+    <div class="grade-section">
+      <div class="grade-circle" id="gradeCircle">
+        <span class="grade-letter" id="gradeLetter">&mdash;</span>
+        <span class="grade-score" id="gradeScore">0 / 100</span>
+      </div>
+      <p class="grade-label" id="gradeLabel">Overall Online Presence</p>
+    </div>
+
+    <!-- Score Breakdown -->
+    <section class="score-section">
+      <h2>Score Breakdown</h2>
+      <div class="score-bars" id="scoreBars"></div>
+    </section>
+
+    <!-- Review Comparison -->
+    <section class="chart-section">
+      <h2>Review Comparison</h2>
+      <div class="review-chart" id="reviewChart"></div>
+    </section>
+
+    <!-- Search Rankings -->
+    <section class="rankings-section" id="rankingsSection" style="display:none;">
+      <h2>Search Rankings</h2>
+      <div class="rankings-list" id="rankingsList"></div>
+    </section>
+
+    <!-- Key Findings -->
+    <section class="findings-section">
+      <h2>Key Findings</h2>
+      <div class="findings-list" id="findingsList"></div>
+    </section>
+
+    <!-- CTA Footer -->
+    <footer class="report-cta">
+      <p class="cta-text">Want help closing these gaps?</p>
+      <p class="cta-contact">Aidan @ SpaStack</p>
+      <p class="cta-sub">aidan@spastack.io</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
